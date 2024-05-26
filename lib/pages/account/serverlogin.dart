@@ -1,21 +1,24 @@
+import 'dart:convert';
+import 'dart:async';
 import 'package:another_flushbar/flushbar.dart';
 import 'package:crypt/crypt.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
-import 'package:project/pages/account/forgetpassword.dart';
-import 'package:project/pages/account/register.dart';
-import 'package:postgres/postgres.dart';
+import 'package:project/pages/account/serverforgetpassword.dart';
+import 'package:project/pages/account/serverregister.dart';
 import '../main/explorer/explorer.dart';
+import 'package:http/http.dart' as http;
 
-class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
+
+class ServerLoginPage extends StatefulWidget {
+  const ServerLoginPage({super.key});
 
   @override
-  State<LoginPage> createState() => _LoginPageState();
+  State<ServerLoginPage> createState() => _ServerLoginPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _ServerLoginPageState extends State<ServerLoginPage> {
   bool _secureText = true;
 
   //bool? isCheck = false;
@@ -39,34 +42,34 @@ class _LoginPageState extends State<LoginPage> {
   final formKey = GlobalKey<FormState>();
 
   Future<void> connectAndPerformOperations() async {
-    final connection = PostgreSQLConnection(
-      '10.0.2.2',
-      5432,
-      'postgres',
-      username: 'postgres',
-      password: 'postgres',
-    );
-
     try {
-      await connection.open();
-
       String EmailForDB = email.text;
       String PasswordForDB = password.text;
       Crypt HashedPassword =
           Crypt.sha256(PasswordForDB, salt: 'abcdefghijklmnop');
-      // Read a row
-      final selectResult = await connection.query(
-          "SELECT EXISTS (SELECT * FROM public.userprofile where email='$EmailForDB' and password = '$HashedPassword')");
-      for (final row in selectResult) {
-        if (row.toString() == "[false]") {
+      String HashedPasswordString = HashedPassword.toString();
+
+      final response = await http.post(
+        Uri.parse('http://10.0.2.2:7687/login'),
+        headers: {
+          'Content-Type': 'application/json; charset=UTF-8',
+          'Connection': 'Keep-Alive'
+        },
+        body: jsonEncode({
+          'password': HashedPasswordString,
+          'email': EmailForDB,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        Map status = json.decode(response.body);
+        if (status['status'] == 'Incorrect email or password'){
           showTopSnackBar1(context);
           password.clear();
-        } else if (row.toString() == "[true]") {
-          final selectResult = await connection.query(
-              '''SELECT "User ID" from public.userprofile where "email" = '$EmailForDB' ''');
-          for (final row in selectResult) {
-            String UID = row.toString().replaceAll(RegExp('[^A-Za-z0-9]'), '');
-            SchedulerBinding.instance.addPostFrameCallback((_) {
+        }
+        else {
+          String UID = status['uid'];
+          SchedulerBinding.instance.addPostFrameCallback((_) {
               Flushbar(
                 icon: const Icon(
                   Icons.message,
@@ -110,13 +113,16 @@ class _LoginPageState extends State<LoginPage> {
                 },
               ),
             );
-          }
         }
       }
+      else {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text("Failed to create post!"),
+        ));
+      }
+
     } catch (e) {
       print('Error: $e');
-    } finally {
-      await connection.close();
     }
   }
 
@@ -294,7 +300,7 @@ class _LoginPageState extends State<LoginPage> {
                               Navigator.of(context).pushReplacement(
                                 MaterialPageRoute(
                                   builder: (BuildContext context) {
-                                    return ForgetPassword(
+                                    return ServerForgetPassword(
                                       Email: email.text,
                                     );
                                   },
@@ -359,7 +365,7 @@ class _LoginPageState extends State<LoginPage> {
                           Navigator.of(context).pushReplacement(
                             MaterialPageRoute(
                               builder: (BuildContext context) {
-                                return const RegisterPage();
+                                return const ServerRegisterPage();
                               },
                             ),
                           );

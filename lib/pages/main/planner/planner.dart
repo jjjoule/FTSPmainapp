@@ -264,8 +264,8 @@
 //                         //   MaterialPageRoute(
 //                         //     builder: (BuildContext context) {
 //                         //       return ExplorerPage(
-//                         //         firstLocation: 'Search destination',
-//                         //         secondLocation: 'Search destination',
+//                         //         firstLocation: 'Select mode',
+//                         //         secondLocation: 'Select mode',
 //                         //         startTime: '',
 //                         //         endTime: '',
 //                         //       );

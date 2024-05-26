@@ -15,7 +15,7 @@
 
 //   String tdata = DateFormat("HH:mm a").format(DateTime.now());
 
-//   String _location = 'Search destination';
+//   String _location = 'Select mode';
 
 //   Container location = Container();
 
@@ -168,7 +168,7 @@
 //                           child: IconButton(
 //                             onPressed: () {
 //                               setState(() {
-//                                 _location = 'Search destination';
+//                                 _location = 'Select mode';
 //                                 location = locationEmpty;
 //                               });
 //                             },

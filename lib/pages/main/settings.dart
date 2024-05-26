@@ -2,7 +2,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:project/pages/main/profile.dart';
 
-import '../account/newpassword2.dart';
+import '../account/servernewpassword2.dart';
 
 class SettingsPage extends StatefulWidget {
   String Email;
@@ -20,6 +20,12 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
+  @override
+  void initState() {
+    super.initState();
+    debugPrint("In settings.dart");
+  }
+
   int pageIndex = 0;
 
   @override
@@ -261,7 +267,7 @@ class _SettingsPageState extends State<SettingsPage> {
                               Navigator.of(context).pushReplacement(
                                 MaterialPageRoute(
                                   builder: (BuildContext context) {
-                                    return NewPassword2(
+                                    return ServerNewPassword2(
                                       Email: widget.Email,
                                       UID: widget.UID,
                                     );

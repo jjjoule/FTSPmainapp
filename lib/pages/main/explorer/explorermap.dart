@@ -6,7 +6,7 @@ import 'package:flutter/scheduler.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:postgres/postgres_v3_experimental.dart';
+//import 'package:postgres/postgres_v3_experimental.dart';
 import 'package:project/pages/main/explorer/selectroute.dart';
 
 import 'dart:convert';
@@ -436,6 +436,7 @@ class ExplorerMapPageState extends State<ExplorerMapPage> {
 
   @override
   void initState() {
+    debugPrint("In explorermap.dart");
     super.initState();
     makePostRequest();
   }
@@ -664,7 +665,7 @@ class ExplorerMapPageState extends State<ExplorerMapPage> {
                               ),
                               shouldIconPulse: false,
                               padding: const EdgeInsets.all(24),
-                              title: 'Success Message',
+                              //title: '',
                               message: 'Rating has been submitted. Thank you!!',
                               flushbarPosition: FlushbarPosition.TOP,
                               margin: const EdgeInsets.fromLTRB(5, 5, 5, 5),
@@ -683,8 +684,8 @@ class ExplorerMapPageState extends State<ExplorerMapPage> {
                                 return ExplorerPage(
                                   Email: widget.Email,
                                   UID: widget.UID,
-                                  // firstLocation: 'Search destination',
-                                  secondLocation: 'Search destination',
+                                  // firstLocation: 'Select mode',
+                                  secondLocation: 'Select mode',
                                   startTime: TimeOfDay.now(),
                                   endTime: TimeOfDay.now(),
                                   selectedIconIndex: -1,

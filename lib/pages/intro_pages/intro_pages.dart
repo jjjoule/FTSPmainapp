@@ -79,8 +79,8 @@ class _IntroPagesState extends State<IntroPages> {
                                   return ExplorerPage(
                                     Email: widget.Email,
                                     UID: widget.UID,
-                                    // firstLocation: 'Search destination',
-                                    secondLocation: 'Search destination',
+                                    // firstLocation: 'Select mode',
+                                    secondLocation: 'Select mode',
                                     startTime: startTime,
                                     endTime: endTime,
                                     selectedIconIndex: -1,

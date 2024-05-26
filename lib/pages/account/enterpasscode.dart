@@ -338,7 +338,7 @@
 //         ),
 //         shouldIconPulse: false,
 //         padding: const EdgeInsets.all(24),
-//         title: 'Error message',
+//         title: 'Error',
 //         message: 'Wrong 4-digit code has been entered. Please retry',
 //         flushbarPosition: FlushbarPosition.TOP,
 //         margin: const EdgeInsets.fromLTRB(5, 5, 5, 5),

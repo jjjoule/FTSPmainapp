@@ -170,8 +170,8 @@
 //                             builder: (BuildContext context) {
 //                               return ExplorerPage(
 //                                 Email: '',
-//                                 firstLocation: 'Search destination',
-//                                 secondLocation: 'Search destination',
+//                                 firstLocation: 'Select mode',
+//                                 secondLocation: 'Select mode',
 //                                 startTime: startTime,
 //                                 endTime: endTime,
 //                                 selectedIconIndex: -1,

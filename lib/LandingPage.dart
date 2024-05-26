@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:project/pages/account/login.dart';
-import 'package:project/pages/account/register.dart';
+import 'package:project/pages/account/serverlogin.dart';
+import 'package:project/pages/account/serverregister.dart';
 
 class LandingPage extends StatelessWidget {
   const LandingPage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    debugPrint("In LandingPage.dart");
     return Scaffold(
       backgroundColor: Colors.white,
       body: SingleChildScrollView(
@@ -24,7 +25,7 @@ class LandingPage extends StatelessWidget {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-               Text(
+              Text(
                 'have you back!',
                 style: TextStyle(
                   color: Colors.red.shade600,
@@ -44,7 +45,7 @@ class LandingPage extends StatelessWidget {
               // Image.asset(
               //   'assets/rocket-launch.PNG',
               //   height: 250,
-              //   width: 250,  
+              //   width: 250,
               // ),
               const SizedBox(height: 225.0),
               ElevatedButton(
@@ -52,7 +53,7 @@ class LandingPage extends StatelessWidget {
                   Navigator.of(context).pushReplacement(
                     MaterialPageRoute(
                       builder: (BuildContext context) {
-                        return const RegisterPage();
+                        return const ServerRegisterPage();
                       },
                     ),
                   );
@@ -77,7 +78,7 @@ class LandingPage extends StatelessWidget {
                   Navigator.of(context).pushReplacement(
                     MaterialPageRoute(
                       builder: (BuildContext context) {
-                        return const LoginPage();
+                        return const ServerLoginPage();
                       },
                     ),
                   );

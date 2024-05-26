@@ -1,23 +1,25 @@
+import 'dart:convert';
+import 'dart:async';
 import 'package:another_flushbar/flushbar.dart';
 import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
-import 'package:postgres/postgres.dart';
-import 'package:project/pages/account/login.dart';
-import 'package:project/pages/account/newpassword.dart';
+import 'package:project/pages/account/serverlogin.dart';
+import 'package:project/pages/account/servernewpassword.dart';
+import 'package:http/http.dart' as http;
 
-class ForgetPassword extends StatefulWidget {
+class ServerForgetPassword extends StatefulWidget {
   String Email;
 
-  ForgetPassword({
+  ServerForgetPassword({
     Key? key,
     required this.Email,
   }) : super(key: key);
 
   @override
-  State<ForgetPassword> createState() => _ForgetPasswordState();
+  State<ServerForgetPassword> createState() => _ServerForgetPasswordState();
 }
 
-class _ForgetPasswordState extends State<ForgetPassword> {
+class _ServerForgetPasswordState extends State<ServerForgetPassword> {
   @override
   void initState() {
     super.initState();
@@ -29,30 +31,29 @@ class _ForgetPasswordState extends State<ForgetPassword> {
   TextEditingController emailController = TextEditingController();
 
   Future<void> connectAndPerformOperations() async {
-    final connection = PostgreSQLConnection(
-      '10.0.2.2',
-      5432,
-      'postgres',
-      username: 'postgres',
-      password: 'postgres',
-    );
-
     try {
-      await connection.open();
-
       String Email = emailController.text;
-      // Read a row
-      final selectResult = await connection.query(
-          "SELECT EXISTS (SELECT * FROM public.userprofile where email='$Email')");
-      for (final row in selectResult) {
-        print(row.toString());
-        if (row.toString() == "[false]") {
+
+      final response = await http.post(
+        Uri.parse('http://10.0.2.2:7687/forgetpassword'),
+        headers: {
+          'Content-Type': 'application/json; charset=UTF-8',
+          'Connection': 'Keep-Alive'
+        },
+        body: jsonEncode({
+          'email': Email,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        Map status = json.decode(response.body);
+        if (status['status'] == 'Email is not registered') {
           showTopSnackBar1(context);
-        } else if (row.toString() == "[true]") {
+        } else {
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(
               builder: (BuildContext context) {
-                return NewPassword(
+                return ServerNewPassword(
                   Email: emailController.text,
                 );
               },
@@ -60,10 +61,13 @@ class _ForgetPasswordState extends State<ForgetPassword> {
           );
         }
       }
+      else {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text("Failed to create post!"),
+        ));
+      }
     } catch (e) {
       print('Error: $e');
-    } finally {
-      await connection.close();
     }
   }
 
@@ -180,7 +184,7 @@ class _ForgetPasswordState extends State<ForgetPassword> {
                   Navigator.of(context).pushReplacement(
                     MaterialPageRoute(
                       builder: (BuildContext context) {
-                        return const LoginPage();
+                        return const ServerLoginPage();
                       },
                     ),
                   );

@@ -10,7 +10,7 @@
 
 // class _PlannerLocationPage2State extends State<PlannerLocationPage2> {
 //   @override
-//   String _location = 'Search destination';
+//   String _location = 'Select mode';
 
 //   Container location = Container();
 
@@ -162,7 +162,7 @@
 //                           child: IconButton(
 //                             onPressed: () {
 //                               setState(() {
-//                                 _location = 'Search destination';
+//                                 _location = 'Select mode';
 //                                 location = locationEmpty;
 //                               });
 //                             },

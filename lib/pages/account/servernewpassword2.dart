@@ -1,27 +1,29 @@
+import 'dart:convert';
+import 'dart:async';
 import 'package:another_flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:crypt/crypt.dart';
-import 'package:postgres/postgres.dart';
 import 'package:project/pages/main/profile.dart';
 import 'package:project/pages/main/settings.dart';
+import 'package:http/http.dart' as http;
 
-class NewPassword2 extends StatefulWidget {
+class ServerNewPassword2 extends StatefulWidget {
   String Email;
 
   String UID;
 
-  NewPassword2({
+  ServerNewPassword2({
     Key? key,
     required this.UID,
     required this.Email,
   }) : super(key: key);
 
   @override
-  State<NewPassword2> createState() => _NewPasswordState2();
+  State<ServerNewPassword2> createState() => _ServerNewPasswordState2();
 }
 
-class _NewPasswordState2 extends State<NewPassword2> {
+class _ServerNewPasswordState2 extends State<ServerNewPassword2> {
   @override
   void initState() {
     super.initState();
@@ -45,29 +47,29 @@ class _NewPasswordState2 extends State<NewPassword2> {
   }
 
   Future<void> connectAndPerformOperations() async {
-    final connection = PostgreSQLConnection(
-      '10.0.2.2',
-      5432,
-      'postgres',
-      username: 'postgres',
-      password: 'postgres',
-    );
-
     try {
-      await connection.open();
-
       String PasswordForDB = password.text;
       Crypt HashedPassword =
           Crypt.sha256(PasswordForDB, salt: 'abcdefghijklmnop');
-      // Read a row
-      final selectResult = await connection.query(
-          "SELECT password FROM public.userprofile where email = '${widget.Email}'");
-      for (final row in selectResult) {
-        if ("[$HashedPassword]" == row.toString()) {
+      String HashedPasswordString = HashedPassword.toString();
+
+      final response = await http.post(
+        Uri.parse('http://10.0.2.2:7687/newpassword'),
+        headers: {
+          'Content-Type': 'application/json; charset=UTF-8',
+          'Connection': 'Keep-Alive'
+        },
+        body: jsonEncode({
+          'password': HashedPasswordString,
+          'email': widget.Email,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        Map status = json.decode(response.body);
+        if (status['status'] == 'New password is the same as current password') {
           showTopSnackBar1(context);
         } else {
-          final updatequery = await connection.execute(
-              "UPDATE public.userprofile set password = '$HashedPassword'");
           SchedulerBinding.instance.addPostFrameCallback((_) {
             Flushbar(
               icon: const Icon(
@@ -102,10 +104,13 @@ class _NewPasswordState2 extends State<NewPassword2> {
           debugPrint('row has been updated');
         }
       }
+      else {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text("Failed to create post!"),
+        ));
+      }
     } catch (e) {
       print('Error: $e');
-    } finally {
-      await connection.close();
     }
   }
 

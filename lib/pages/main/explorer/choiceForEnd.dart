@@ -6,33 +6,19 @@ import '../../../constants.dart';
 
 class ChoiceForEndPage extends StatefulWidget {
   String Email;
-
   String UID;
-
   // String dateandTime;
-
   // String firstLocation;
-
   String secondLocation;
-
   TimeOfDay startTime;
-
   TimeOfDay endTime;
-
   int selectedIconIndex;
-
   int endDestinationChoice;
-
   int topK;
-
   int topN;
-
   double latStart;
-
   double longStart;
-
   double latEnd;
-
   double longEnd;
 
   ChoiceForEndPage({
@@ -59,6 +45,12 @@ class ChoiceForEndPage extends StatefulWidget {
 }
 
 class _ChoiceForEndPageState extends State<ChoiceForEndPage> {
+  @override
+  void initState() {
+    super.initState();
+    debugPrint("In choiceForEnd.dart");
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -105,7 +97,7 @@ class _ChoiceForEndPageState extends State<ChoiceForEndPage> {
                 const Padding(
                   padding: EdgeInsets.only(left: 50),
                   child: Text(
-                    "Select end waypoint",
+                    "Select endpoint",
                     style: TextStyle(
                         color: textColorLightTheme,
                         fontSize: 20,
@@ -115,15 +107,6 @@ class _ChoiceForEndPageState extends State<ChoiceForEndPage> {
               ],
             ),
           ),
-          // const Center(
-          //   child: Text(
-          //     'How would you like to end your journey',
-          //     style: TextStyle(
-          //       fontSize: 20,
-          //       fontWeight: FontWeight.w500
-          //     ),
-          //   ),
-          // ),
           const SizedBox(
             height: 65,
           ),
@@ -150,7 +133,7 @@ class _ChoiceForEndPageState extends State<ChoiceForEndPage> {
                         Email: widget.Email,
                         UID: widget.UID,
                         // firstLocation: widget.firstLocation,
-                        secondLocation: "Starting point",
+                        secondLocation: "End at start point",
                         startTime: widget.startTime,
                         endTime: widget.endTime,
                         selectedIconIndex: widget.selectedIconIndex,
@@ -173,7 +156,7 @@ class _ChoiceForEndPageState extends State<ChoiceForEndPage> {
                     child: Padding(
                       padding: EdgeInsets.only(left: 15.0),
                       child: Text(
-                        'Go back to starting point',
+                        'End at start point',
                         style: TextStyle(fontSize: 15),
                       ),
                     ),
@@ -209,7 +192,7 @@ class _ChoiceForEndPageState extends State<ChoiceForEndPage> {
                         Email: widget.Email,
                         UID: widget.UID,
                         // firstLocation: widget.firstLocation,
-                        secondLocation: "End at itinerary",
+                        secondLocation: "End at recommended place",
                         startTime: widget.startTime,
                         endTime: widget.endTime,
                         selectedIconIndex: widget.selectedIconIndex,
@@ -232,7 +215,7 @@ class _ChoiceForEndPageState extends State<ChoiceForEndPage> {
                     child: Padding(
                       padding: EdgeInsets.only(left: 15.0),
                       child: Text(
-                        'End at itinerary (suggested)',
+                        'End at recommended place',
                         style: TextStyle(fontSize: 15),
                       ),
                     ),
@@ -291,7 +274,7 @@ class _ChoiceForEndPageState extends State<ChoiceForEndPage> {
                     child: Padding(
                       padding: EdgeInsets.only(left: 15.0),
                       child: Text(
-                        'Choose your own location',
+                        'End at a place of your choice',
                         style: TextStyle(fontSize: 15),
                       ),
                     ),
@@ -305,11 +288,6 @@ class _ChoiceForEndPageState extends State<ChoiceForEndPage> {
               ),
             ),
           ),
-          //  Container(
-          //   height: 30,
-          //   width: 50,
-          //   color: Colors.black,
-          // )
         ],
       ),
     );

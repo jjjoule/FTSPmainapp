@@ -376,7 +376,7 @@
 //         ),
 //         shouldIconPulse: false,
 //         padding: const EdgeInsets.all(24),
-//         title: 'Error message',
+//         title: 'Error',
 //         message: 'Please select a end destination',
 //         flushbarPosition: FlushbarPosition.TOP,
 //         margin: const EdgeInsets.fromLTRB(5, 5, 5, 5),

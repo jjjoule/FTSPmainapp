@@ -102,6 +102,7 @@ class _SearchLocationPage1State extends State<SearchLocationPage1> {
   void initState() {
     super.initState();
     _getCurrentLocation();
+    debugPrint("In searchlocation1.dart");
   }
 
   Future<void> _getCurrentLocation() async {

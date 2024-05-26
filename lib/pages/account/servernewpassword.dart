@@ -1,31 +1,32 @@
+import 'dart:convert';
+import 'dart:async';
 import 'package:another_flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
+import 'package:project/pages/account/serverforgetpassword.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:crypt/crypt.dart';
-import 'package:postgres/postgres.dart';
-import 'package:project/pages/main/profile.dart';
-import 'package:project/pages/main/settings.dart';
+import 'package:http/http.dart' as http;
 
-class NewPassword2 extends StatefulWidget {
+
+import 'serverlogin.dart';
+
+class ServerNewPassword extends StatefulWidget {
   String Email;
 
-  String UID;
-
-  NewPassword2({
+  ServerNewPassword({
     Key? key,
-    required this.UID,
     required this.Email,
   }) : super(key: key);
 
   @override
-  State<NewPassword2> createState() => _NewPasswordState2();
+  State<ServerNewPassword> createState() => _ServerNewPasswordState();
 }
 
-class _NewPasswordState2 extends State<NewPassword2> {
+class _ServerNewPasswordState extends State<ServerNewPassword> {
   @override
   void initState() {
     super.initState();
-    debugPrint("In newpassword2.dart");
+    debugPrint("In newpassword.dart");
   }
 
   bool _secureText1 = true;
@@ -39,35 +40,30 @@ class _NewPasswordState2 extends State<NewPassword2> {
 
   final formKey = GlobalKey<FormState>();
 
-  static Future<T?> push<T extends Object>(
-      BuildContext context, Route<T> route) {
-    return Navigator.of(context).push(route);
-  }
-
   Future<void> connectAndPerformOperations() async {
-    final connection = PostgreSQLConnection(
-      '10.0.2.2',
-      5432,
-      'postgres',
-      username: 'postgres',
-      password: 'postgres',
-    );
-
     try {
-      await connection.open();
-
       String PasswordForDB = password.text;
       Crypt HashedPassword =
           Crypt.sha256(PasswordForDB, salt: 'abcdefghijklmnop');
-      // Read a row
-      final selectResult = await connection.query(
-          "SELECT password FROM public.userprofile where email = '${widget.Email}'");
-      for (final row in selectResult) {
-        if ("[$HashedPassword]" == row.toString()) {
+      String HashedPasswordString = HashedPassword.toString();
+
+      final response = await http.post(
+        Uri.parse('http://10.0.2.2:7687/newpassword'),
+        headers: {
+          'Content-Type': 'application/json; charset=UTF-8',
+          'Connection': 'Keep-Alive'
+        },
+        body: jsonEncode({
+          'password': HashedPasswordString,
+          'email': widget.Email,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        Map status = json.decode(response.body);
+        if (status['status'] == 'New password is the same as current password') {
           showTopSnackBar1(context);
         } else {
-          final updatequery = await connection.execute(
-              "UPDATE public.userprofile set password = '$HashedPassword'");
           SchedulerBinding.instance.addPostFrameCallback((_) {
             Flushbar(
               icon: const Icon(
@@ -92,20 +88,20 @@ class _NewPasswordState2 extends State<NewPassword2> {
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(
               builder: (BuildContext context) {
-                return ProfilePage(
-                  Email: widget.Email,
-                  UID: widget.UID,
-                );
+                return const ServerLoginPage();
               },
             ),
           );
           debugPrint('row has been updated');
         }
       }
+      else {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text("Failed to create post!"),
+        ));
+      }
     } catch (e) {
       print('Error: $e');
-    } finally {
-      await connection.close();
     }
   }
 
@@ -266,9 +262,8 @@ class _NewPasswordState2 extends State<NewPassword2> {
                   Navigator.of(context).pushReplacement(
                     MaterialPageRoute(
                       builder: (BuildContext context) {
-                        return SettingsPage(
+                        return ServerForgetPassword(
                           Email: widget.Email,
-                          UID: widget.UID,
                         );
                       },
                     ),

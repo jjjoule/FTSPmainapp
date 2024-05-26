@@ -4,6 +4,7 @@ import 'package:project/LandingPage.dart';
 import 'package:project/pages/main/explorer/currentlocation.dart';
 import 'package:project/pages/main/explorer/explorer.dart';
 import 'package:project/pages/main/settings.dart';
+import 'package:project/pages/main/enhanceprofile.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
@@ -23,6 +24,12 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
+  @override
+  void initState() {
+    super.initState();
+    debugPrint("In profile.dart");
+  }
+
   int pageIndex = 0;
 
   TimeOfDay startTime = TimeOfDay.now();
@@ -169,7 +176,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         ),
                       ),
                       const SizedBox(
-                        height: 13,
+                        height: 8,
                       ),
                       Padding(
                         padding: const EdgeInsets.only(left: 3.0),
@@ -394,13 +401,68 @@ class _ProfilePageState extends State<ProfilePage> {
                     )
                   ],
                 ),
-                // ElevatedButton(
-                //   onPressed: main,
-                //   child: const Text('hi'),
-                // )
+                                const SizedBox(
+                  height: 35,
+                ),
+                Row(
+                  children: [
+                    Icon(
+                      Icons.upgrade,
+                      color: Colors.grey.shade700,
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 25.0),
+                      child: RichText(
+                        text: TextSpan(
+                          text: 'Enhance Profile                     ',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w500,
+                            color: Colors.grey.shade700,
+                            fontSize: 15,
+                          ),
+                          recognizer: TapGestureRecognizer()
+                            ..onTap = () {
+                              Navigator.of(context).pushReplacement(
+                                MaterialPageRoute(
+                                  builder: (BuildContext context) {
+                                    return EnhanceProfilePage(
+                                      Email: widget.Email,
+                                      UID: widget.UID,
+                                    );
+                                  },
+                                ),
+                              );
+                            },
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 1),
+                      child: IconButton(
+                        icon: const Icon(
+                          Icons.arrow_forward_ios_outlined,
+                          size: 15,
+                        ),
+                        onPressed: () {
+                          Navigator.of(context).pushReplacement(
+                            MaterialPageRoute(
+                              builder: (BuildContext context) {
+                                return EnhanceProfilePage(
+                                  Email: widget.Email,
+                                  UID: widget.UID,
+                                );
+                              },
+                            ),
+                          );
+                        },
+                      ),
+                    )
+                  ],
+                ),
               ],
             ),
           ),
+          
           const SizedBox(
             height: 280,
           ),
@@ -437,8 +499,8 @@ class _ProfilePageState extends State<ProfilePage> {
                               return ExplorerPage(
                                 Email: widget.Email,
                                 UID: widget.UID,
-                                // firstLocation: 'Search destination',
-                                secondLocation: 'Search destination',
+                                // firstLocation: 'Select mode',
+                                secondLocation: 'Select mode',
                                 startTime: startTime,
                                 endTime: endTime,
                                 selectedIconIndex: -1,

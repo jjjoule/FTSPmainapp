@@ -20,6 +20,12 @@ class NewPassword extends StatefulWidget {
 }
 
 class _NewPasswordState extends State<NewPassword> {
+  @override
+  void initState() {
+    super.initState();
+    debugPrint("In newpassword.dart");
+  }
+
   bool _secureText1 = true;
 
   TextEditingController password = TextEditingController();
@@ -66,7 +72,7 @@ class _NewPasswordState extends State<NewPassword> {
               ),
               shouldIconPulse: false,
               padding: const EdgeInsets.all(24),
-              title: 'Success Message',
+              //title: '',
               message: 'Password has been updated successfully',
               flushbarPosition: FlushbarPosition.TOP,
               margin: const EdgeInsets.fromLTRB(5, 5, 5, 5),
@@ -289,7 +295,7 @@ class _NewPasswordState extends State<NewPassword> {
         ),
         shouldIconPulse: false,
         padding: const EdgeInsets.all(24),
-        title: 'Error message',
+        title: 'Error',
         message:
             'New password entered cannot be the same as the current password.',
         flushbarPosition: FlushbarPosition.TOP,

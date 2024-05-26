@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'dart:async';
 import 'dart:math';
 import 'package:another_flushbar/flushbar.dart';
 import 'package:crypt/crypt.dart';
@@ -7,32 +9,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
-import 'package:postgres/postgres.dart';
 import 'package:project/pages/account/login.dart';
 import 'package:email_validator/email_validator.dart';
 import '../intro_pages/intro_pages.dart';
+import 'package:http/http.dart' as http;
 
-class RegisterPage extends StatefulWidget {
-  const RegisterPage({
+class ServerRegisterPage extends StatefulWidget {
+  const ServerRegisterPage({
     super.key,
   });
 
   @override
-  State<RegisterPage> createState() => _RegisterPageState();
+  State<ServerRegisterPage> createState() => _ServerRegisterPageState();
 }
 
-//////////////////////////////////////////////
-// Race Dropdown List // Removed On Request //
-//////////////////////////////////////////////
-// List<String> Races = <String>[
-//   'Chinese',
-//   'Malay',
-//   'Indian',
-//   'Eurasian',
-//   'Others'
-// ];
-
-class _RegisterPageState extends State<RegisterPage> {
+class _ServerRegisterPageState extends State<ServerRegisterPage> {
   @override
   void initState() {
     super.initState();
@@ -41,11 +32,11 @@ class _RegisterPageState extends State<RegisterPage> {
     nameController.text = "Johnny1";
     emailController.text = "Johnny1@gmail.com";
     dateController.text = "01/01/1970";
-    //raceController.text = "???";
     mobilenumberController.text = "91234567";
     password.text = "Johnny112345!";
     confirmPassword.text = "Johnny112345!";
-    debugPrint("In register.dart (lib\\pages\\account\\register.dart)");
+    debugPrint(
+        "In serverregister.dart (lib\\pages\\account\\serverregister.dart)");
   }
 
   // use this controller to get what the user typed
@@ -57,7 +48,6 @@ class _RegisterPageState extends State<RegisterPage> {
   TextEditingController nameController = TextEditingController();
   TextEditingController emailController = TextEditingController();
   TextEditingController dateController = TextEditingController();
-  //TextEditingController raceController = TextEditingController();
   TextEditingController mobilenumberController = TextEditingController();
   TextEditingController password = TextEditingController();
   TextEditingController confirmPassword = TextEditingController();
@@ -91,74 +81,7 @@ class _RegisterPageState extends State<RegisterPage> {
   Container emptyContainer = Container();
   Container emptyContainer2 = Container();
 
-  //////////////////////////////////////////////
-  // Race Dropdown List // Removed On Request //
-  //////////////////////////////////////////////
-  // late Container placeHolderContainer = Container(
-  //   child: Padding(
-  //     padding: const EdgeInsets.only(right: 50, left: 50),
-  //     child: TextFormField(
-  //       controller: raceController,
-  //       decoration: InputDecoration(
-  //         border: const OutlineInputBorder(
-  //           borderRadius: BorderRadius.all(
-  //             Radius.circular(30),
-  //           ),
-  //         ),
-  //         hintText: ' Enter your race',
-  //         hintStyle: TextStyle(
-  //           color: Colors.grey.shade400,
-  //           fontSize: 15,
-  //         ),
-  //       ),
-  //       keyboardType: TextInputType.emailAddress,
-  //       validator: (value) {
-  //         if (value!.trim().isEmpty) {
-  //           return 'Race is required';
-  //         }
-  //         return null;
-  //       },
-  //     ),
-  //   ),
-  // );
-
-  // late Container placeHolderContainer2 = Container(
-  //   child: Padding(
-  //     padding: const EdgeInsets.only(right: 50, left: 50, top: 10),
-  //     child: TextFormField(
-  //       controller: raceController,
-  //       decoration: InputDecoration(
-  //         border: const OutlineInputBorder(
-  //           borderRadius: BorderRadius.all(
-  //             Radius.circular(30),
-  //           ),
-  //         ),
-  //         hintText: ' Enter your race',
-  //         hintStyle: TextStyle(
-  //           color: Colors.grey.shade400,
-  //           fontSize: 15,
-  //         ),
-  //       ),
-  //       keyboardType: TextInputType.emailAddress,
-  //       validator: (value) {
-  //         if (value!.trim().isEmpty) {
-  //           return 'Race is required';
-  //         }
-  //         return null;
-  //       },
-  //     ),
-  //   ),
-  // );
-
   Future<void> connectAndPerformOperations() async {
-    final connection = PostgreSQLConnection(
-      '10.0.2.2',
-      5432,
-      'postgres',
-      username: 'postgres',
-      password: 'postgres',
-    );
-
     try {
       // RNG
       int random1(int min, int max) {
@@ -183,19 +106,7 @@ class _RegisterPageState extends State<RegisterPage> {
       String PasswordForDB = password.text;
       Crypt HashedPassword =
           Crypt.sha256(PasswordForDB, salt: 'abcdefghijklmnop');
-
-      //////////
-      // Race //
-      //////////
-      // String RaceForDB;
-      // if (dropdownValueNoOfPOIs == "Chinese" ||
-      //     dropdownValueNoOfPOIs == "Malay" ||
-      //     dropdownValueNoOfPOIs == "Indian" ||
-      //     dropdownValueNoOfPOIs == "Eurasian") {
-      //   RaceForDB = dropdownValueNoOfPOIs;
-      // } else {
-      //   RaceForDB = raceController.text;
-      // }
+      String HashedPasswordString = HashedPassword.toString();
 
       // Creating a DateTime object with selectedMonth and selectedYear
       DateTime birthDate =
@@ -206,30 +117,36 @@ class _RegisterPageState extends State<RegisterPage> {
       debugPrint("Name: $NameForDB");
       debugPrint("Age: $age");
       debugPrint("Gender: $_genderchoice");
-      debugPrint("Race: $dropdownValueNoOfPOIs");
       debugPrint("Email: $EmailForDB");
       debugPrint("Password: $PasswordForDB");
       debugPrint("Hashed Password: $HashedPassword");
       debugPrint("Mobile Number: $MobileNumberForDB");
       debugPrint("Birth Date: $formattedDate");
 
-      await connection.open();
+      final response = await http.post(
+        Uri.parse('http://10.0.2.2:7687/register'),
+        headers: {
+          'Content-Type': 'application/json; charset=UTF-8',
+          'Connection': 'Keep-Alive'
+        },
+        body: jsonEncode({
+          'userid': UID,
+          'name': NameForDB,
+          'age': age,
+          'gender': _genderchoice,
+          'password': HashedPasswordString,
+          'email': EmailForDB,
+          'birthdate': formattedDate,
+          'mobilenumber': MobileNumberForDB,
+        }),
+      );
 
-      // Read a row
-      final selectResult = await connection.query(
-          "SELECT EXISTS (SELECT * FROM public.userprofile where email='$EmailForDB')");
-      for (final i in selectResult) {
-        if (i.toString() == '[true]') {
+      if (response.statusCode == 200) {
+        Map status = json.decode(response.body);
+        if (status['status'] == 'Email has already been used') {
           showTopSnackBar(context,
               error: 'Error', message: 'Email has already been used');
         } else {
-          print("Account has not been created");
-          // Create a row
-          final insertResult = await connection.execute('''
-            INSERT INTO public.userprofile ("User ID", "Name", "age", "gender", "race", "password", "email", "birthdate", "mobilenumber")
-            VALUES ('$UID', '$NameForDB', '$age', '$_genderchoice', '','$HashedPassword', '$EmailForDB', '$formattedDate', '$MobileNumberForDB');
-          ''');
-          print('Row inserted successfully!');
           SchedulerBinding.instance.addPostFrameCallback((_) {
             Flushbar(
               icon: const Icon(
@@ -251,22 +168,14 @@ class _RegisterPageState extends State<RegisterPage> {
               backgroundColor: Colors.green.shade700.withOpacity(0.9),
             ).show(context);
           });
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(
-              builder: (BuildContext context) {
-                return IntroPages(
-                  UID: UID!,
-                  Email: EmailForDB,
-                );
-              },
-            ),
-          );
         }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text("Failed to create post!"),
+        ));
       }
     } catch (e) {
       print('Error: $e');
-    } finally {
-      await connection.close();
     }
   }
 
@@ -417,61 +326,6 @@ class _RegisterPageState extends State<RegisterPage> {
                   height: 10,
                 ),
 
-                //////////////////////////
-                // Birth Date Selection //
-                //////////////////////////
-                // Padding(
-                //   padding: const EdgeInsets.only(right: 50, left: 50),
-                //   child: TextFormField(
-                //     controller: dateController,
-                //     decoration: InputDecoration(
-                //       border: const OutlineInputBorder(
-                //         borderRadius: BorderRadius.all(
-                //           Radius.circular(30),
-                //         ),
-                //       ),
-                //       hintText: ' Birth Date',
-                //       hintStyle: TextStyle(
-                //         color: Colors.grey.shade400,
-                //         fontSize: 15,
-                //       ),
-                //       suffixIcon: IconButton(
-                //         onPressed: () async {
-                //           DateTime? pickedDate = await showDatePicker(
-                //             context: context,
-                //             initialDate: DateTime(1970),
-                //             firstDate: DateTime(1900),
-                //             lastDate: DateTime(2100),
-                //           );
-                //           if (pickedDate != null) {
-                //             String formattedDate =
-                //                 DateFormat("dd/MM/yyyy").format(pickedDate);
-                //             setState(
-                //               () {
-                //                 dateController.text = formattedDate.toString();
-                //                 birthDate = pickedDate;
-                //               },
-                //             );
-                //           } else {
-                //             debugPrint("No date selected");
-                //           }
-                //         },
-                //         icon: const Icon(Icons.calendar_month),
-                //       ),
-                //     ),
-                //     keyboardType: TextInputType.datetime,
-                //     validator: (value) {
-                //       if (value!.trim().isEmpty) {
-                //         return 'Birth Date is required';
-                //       }
-                //       // if(!dateRegExp.hasMatch(value)){
-                //       //   return 'Invalid Date';
-                //       // }
-                //       return null;
-                //     },
-                //   ),
-                // ),
-
                 Padding(
                   padding: const EdgeInsets.only(right: 50, left: 50),
                   child: Row(
@@ -521,28 +375,6 @@ class _RegisterPageState extends State<RegisterPage> {
                         }),
                       ),
                       SizedBox(width: 10),
-
-                      // IconButton(
-                      //   onPressed: () {
-                      //     DateTime pickedDate = DateTime(
-                      //       int.parse(selectedYear),
-                      //       int.parse(selectedMonth),
-                      //       1,
-                      //     );
-                      //     String formattedDate =
-                      //         DateFormat("dd/MM/yyyy").format(pickedDate);
-                      //     setState(() {
-                      //       dateController.text = formattedDate.toString();
-                      //       birthDate = pickedDate;
-                      //     });
-
-                      //     debugPrint("****************");
-                      //     debugPrint("** pickedDate **");
-                      //     debugPrint("****************");
-                      //     debugPrint(formattedDate.toString());
-                      //   },
-                      //   icon: const Icon(Icons.calendar_month),
-                      // ),
                     ],
                   ),
                 ),
@@ -564,9 +396,6 @@ class _RegisterPageState extends State<RegisterPage> {
                     ),
                   ),
                 ),
-                // const SizedBox(
-                //   height: 10,
-                // ),
                 Row(
                   children: [
                     Padding(
@@ -646,88 +475,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 const SizedBox(
                   height: 10,
                 ),
-                //////////
-                // Race //
-                //////////
-                // const Padding(
-                //   padding: EdgeInsets.only(right: 256),
-                //   child: Text(
-                //     'Race',
-                //     style: TextStyle(
-                //       color: Colors.grey,
-                //       fontWeight: FontWeight.w800,
-                //       fontSize: 15,
-                //     ),
-                //   ),
-                // ),
-                // const SizedBox(
-                //   height: 10,
-                // ),
-                // Container(
-                //   height: 57,
-                //   width: 295,
-                //   decoration: BoxDecoration(
-                //     borderRadius: const BorderRadius.all(
-                //       Radius.circular(30),
-                //     ),
-                //     border: Border.all(color: Colors.black38),
-                //   ),
-                //   child: Padding(
-                //     padding: const EdgeInsets.only(left: 15.0, top: 2),
-                //     child: DropdownButton2(
-                //       items: Races.map<DropdownMenuItem<String>>((value) {
-                //         return DropdownMenuItem<String>(
-                //           value: value,
-                //           child: Text(value),
-                //         );
-                //       }).toList(),
-                //       iconStyleData: const IconStyleData(
-                //         icon: Padding(
-                //           padding: EdgeInsets.only(left: 140),
-                //           child: Icon(Icons.arrow_drop_down),
-                //         ),
-                //         iconSize: 35,
-                //       ),
-                //       dropdownStyleData: DropdownStyleData(
-                //         maxHeight: 200,
-                //         width: 150,
-                //         padding: null,
-                //         decoration: BoxDecoration(
-                //           borderRadius: BorderRadius.circular(14),
-                //         ),
-                //         elevation: 8,
-                //         offset: const Offset(-20, 0),
-                //         scrollbarTheme: ScrollbarThemeData(
-                //           radius: const Radius.circular(40),
-                //           thickness: MaterialStateProperty.all(6),
-                //           thumbVisibility: MaterialStateProperty.all(true),
-                //         ),
-                //       ),
-                //       underline: const SizedBox(),
-                //       value: dropdownValueNoOfPOIs,
-                //       onChanged: (newValue2) {
-                //         setState(() {
-                //           dropdownValueNoOfPOIs = newValue2!;
-                //           if (dropdownValueNoOfPOIs == "Others") {
-                //             placeHolderContainer = placeHolderContainer2;
-                //             emptyContainer = placeHolderContainer;
-                //             // emptyContainer = emptyContainer2;
-                //           } else if (dropdownValueNoOfPOIs == "Chinese" ||
-                //               dropdownValueNoOfPOIs == "Malay" ||
-                //               dropdownValueNoOfPOIs == "Indian" ||
-                //               dropdownValueNoOfPOIs == "Eurasian") {
-                //             emptyContainer = emptyContainer2;
-                //             placeHolderContainer = emptyContainer;
-                //           }
-                //         });
-                //       },
-                //     ),
-                //   ),
-                // ),
-                // emptyContainer,
-                // const SizedBox(
-                //   height: 10,
-                // ),
+
                 ///////////////////
                 // Mobile Number //
                 ///////////////////
@@ -979,14 +727,7 @@ class _RegisterPageState extends State<RegisterPage> {
                             error: 'Error',
                             message:
                                 'Please agree to the Terms of service and Privacy Policy.');
-                        // debugPrint("${nameController.text}hi");
-                        // password.clear();
-                        // confirmPassword.clear();
                       } else {
-                        // DateTime currentDate = DateTime.now();
-                        // int age = currentDate.year - int.parse(selectedYear);
-                        // int currentMonth = currentDate.month;
-                        // int birthMonth = int.parse(selectedMonth);
                         if (_genderchoice != "Male" &&
                             _genderchoice != "Female" &&
                             _genderchoice != "Undisclose") {
@@ -1083,67 +824,4 @@ class _RegisterPageState extends State<RegisterPage> {
         barBlur: 20,
         backgroundColor: Colors.red.shade700.withOpacity(0.9),
       )..show(context);
-
-  // void showTopSnackBar1(BuildContext context) => Flushbar(
-  //       icon: const Icon(
-  //         Icons.error,
-  //         size: 32,
-  //         color: Colors.white,
-  //       ),
-  //       shouldIconPulse: false,
-  //       padding: const EdgeInsets.all(24),
-  //       title: 'Error',
-  //       message: 'Please agree to the Terms of service and Privacy Policy.',
-  //       flushbarPosition: FlushbarPosition.TOP,
-  //       margin: const EdgeInsets.fromLTRB(5, 5, 5, 5),
-  //       borderRadius: const BorderRadius.all(
-  //         Radius.circular(10),
-  //       ),
-  //       dismissDirection: FlushbarDismissDirection.HORIZONTAL,
-  //       duration: const Duration(seconds: 2),
-  //       barBlur: 20,
-  //       backgroundColor: Colors.red.shade700.withOpacity(0.9),
-  //     )..show(context);
-
-  // void showTopSnackBar2(BuildContext context) => Flushbar(
-  //       icon: const Icon(
-  //         Icons.error,
-  //         size: 32,
-  //         color: Colors.white,
-  //       ),
-  //       shouldIconPulse: false,
-  //       padding: const EdgeInsets.all(24),
-  //       title: 'Error',
-  //       message: 'Please select a gender',
-  //       flushbarPosition: FlushbarPosition.TOP,
-  //       margin: const EdgeInsets.fromLTRB(5, 5, 5, 5),
-  //       borderRadius: const BorderRadius.all(
-  //         Radius.circular(10),
-  //       ),
-  //       dismissDirection: FlushbarDismissDirection.HORIZONTAL,
-  //       duration: const Duration(seconds: 2),
-  //       barBlur: 20,
-  //       backgroundColor: Colors.red.shade700.withOpacity(0.9),
-  //     )..show(context);
-
-  // void showTopSnackBar3(BuildContext context) => Flushbar(
-  //       icon: const Icon(
-  //         Icons.error,
-  //         size: 32,
-  //         color: Colors.white,
-  //       ),
-  //       shouldIconPulse: false,
-  //       padding: const EdgeInsets.all(24),
-  //       title: 'Error',
-  //       message: 'Email has already been used',
-  //       flushbarPosition: FlushbarPosition.TOP,
-  //       margin: const EdgeInsets.fromLTRB(5, 5, 5, 5),
-  //       borderRadius: const BorderRadius.all(
-  //         Radius.circular(10),
-  //       ),
-  //       dismissDirection: FlushbarDismissDirection.HORIZONTAL,
-  //       duration: const Duration(seconds: 2),
-  //       barBlur: 20,
-  //       backgroundColor: Colors.red.shade700.withOpacity(0.9),
-  //     )..show(context);
 }

@@ -65,6 +65,12 @@ class SearchLocationPage2 extends StatefulWidget {
 }
 
 class _SearchLocationPage2State extends State<SearchLocationPage2> {
+  @override
+  void initState() {
+    super.initState();
+    debugPrint("In searchlocation2.dart");
+  }
+
   List<AutocompletePrediction> placePredictions = [];
   void placeAutocomplete(String query) async {
     Uri uri = Uri.https(

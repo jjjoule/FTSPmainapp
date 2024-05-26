@@ -26,6 +26,12 @@ class UserCurrentLocation extends StatefulWidget {
 }
 
 class UserCurrentLocationState extends State<UserCurrentLocation> {
+  @override
+  void initState() {
+    super.initState();
+    debugPrint("In currentlocation.dart");
+  }
+
   void getLocation() async {
     await Geolocator.checkPermission();
     await Geolocator.requestPermission();
